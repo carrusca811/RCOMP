@@ -1,0 +1,218 @@
+!
+version 15.1
+no service timestamps log datetime msec
+no service timestamps debug datetime msec
+no service password-encryption
+!
+hostname Router
+!
+!
+!
+!
+ip dhcp excluded-address 172.17.38.161
+ip dhcp excluded-address 172.17.38.193
+ip dhcp excluded-address 172.17.38.1
+ip dhcp excluded-address 172.17.38.145
+ip dhcp excluded-address 172.17.38.129
+!
+ip dhcp pool 4Ground
+ network 172.17.38.160 255.255.255.224
+ default-router 172.17.38.161
+ dns-server 172.17.38.130
+ domain-name building-4.rcomp-21-22-df-g4
+ip dhcp pool 4First
+ network 172.17.38.192 255.255.255.192
+ default-router 172.17.38.193
+ dns-server 172.17.38.130
+ domain-name building-4.rcomp-21-22-df-g4
+ip dhcp pool 4Wifi
+ network 172.17.38.0 255.255.255.128
+ default-router 172.17.38.1
+ dns-server 172.17.38.130
+ domain-name building-4.rcomp-21-22-df-g4
+ip dhcp pool 4VoIP
+ network 172.17.38.144 255.255.255.240
+ default-router 172.17.38.145
+ option 150 ip 172.17.38.145
+ dns-server 172.17.38.130
+ domain-name building-4.rcomp-21-22-df-g4
+!
+!
+!
+no ip cef
+no ipv6 cef
+!
+!
+!
+!
+license udi pid CISCO2811/K9 sn FTX1017GMJ8-
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+spanning-tree mode pvst
+!
+!
+!
+!
+!
+!
+interface FastEthernet0/0
+ no ip address
+ duplex auto
+ speed auto
+!
+interface FastEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ shutdown
+!
+interface FastEthernet1/0
+ no ip address
+!
+interface FastEthernet1/0.1
+ encapsulation dot1Q 280
+ ip address 172.17.32.4 255.255.255.128
+ ip access-group BUILDING_4INTERNET in
+!
+interface FastEthernet1/0.2
+ encapsulation dot1Q 296
+ ip address 172.17.38.161 255.255.255.224
+ ip access-group BUILDING_4PCS in
+!
+interface FastEthernet1/0.3
+ encapsulation dot1Q 297
+ ip address 172.17.38.193 255.255.255.192
+ ip access-group BUILDING_4PCS in
+!
+interface FastEthernet1/0.4
+ encapsulation dot1Q 298
+ ip address 172.17.38.1 255.255.255.128
+ ip access-group BUILDING_4PCS in
+!
+interface FastEthernet1/0.5
+ encapsulation dot1Q 299
+ ip address 172.17.38.129 255.255.255.240
+ ip access-group BUILDING_4PCS in
+!
+interface FastEthernet1/0.6
+ encapsulation dot1Q 300
+ ip address 172.17.38.145 255.255.255.240
+ ip access-group BUILDING_4VOIP in
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+router ospf 4
+ log-adjacency-changes
+ network 172.17.32.0 0.0.0.127 area 0
+ network 172.17.38.0 0.0.1.255 area 4
+!
+router rip
+!
+ip nat inside source static tcp 172.17.38.131 80 172.17.32.4 80 
+ip nat inside source static tcp 172.17.38.131 443 172.17.32.4 443 
+ip nat inside source static tcp 172.17.38.130 53 172.17.32.4 53 
+ip nat inside source static udp 172.17.38.130 53 172.17.32.4 53 
+ip classless
+!
+ip flow-export version 9
+!
+!
+ip access-list extended anti-spoof
+ deny ip 10.0.0.0 0.255.255.255 any
+ deny ip 172.16.0.0 0.15.255.255 any
+ deny ip 192.168.0.0 0.0.255.255 any
+ deny ip 224.0.0.0 31.255.255.255 any
+ deny ip 127.0.0.0 0.255.255.255 any
+ deny ip 169.254.0.0 0.0.255.255 any
+ deny ip 172.17.38.0 0.0.1.255 any
+ permit ip any any
+ip access-list extended BUILDING_4PCS
+ permit icmp 172.17.38.0 0.0.1.255 any echo
+ permit icmp 172.17.38.0 0.0.1.255 any echo-reply
+ permit ip 172.17.38.0 0.0.0.255 any
+ permit udp any any eq bootps
+ permit tcp 172.17.38.0 0.0.1.255 host 172.17.38.131 eq www
+ permit tcp 172.17.38.0 0.0.1.255 host 172.17.38.131 eq 443
+ permit tcp 172.17.38.0 0.0.1.255 host 172.17.38.130 eq domain
+ permit udp 172.17.38.0 0.0.1.255 host 172.17.38.130 eq domain
+ deny ip any 172.17.38.0 0.0.0.255
+ip access-list extended BUILDING_4INTERNET
+ deny ip 172.17.38.0 0.0.1.255 any
+ permit icmp any 172.17.38.0 0.0.1.255 echo
+ permit icmp any 172.17.38.0 0.0.1.255 echo-reply
+ deny ip any 172.17.38.0 0.0.0.255
+ permit tcp any host 172.17.38.131 eq www
+ permit tcp any host 172.17.38.131 eq 443
+ permit tcp any host 172.17.38.130 eq domain
+ permit udp any host 172.17.38.130 eq domain
+ permit ip any any
+ip access-list extended BUILDING_4VOIP
+ permit icmp 172.17.38.0 0.0.1.255 any echo
+ permit icmp 172.17.38.0 0.0.1.255 any echo-reply
+ permit ip 172.17.38.0 0.0.0.255 any
+ permit udp any any eq bootps
+ permit udp any any eq tftp
+ permit tcp any host 172.17.38.145 eq 4000
+ permit tcp 172.17.38.0 0.0.1.255 host 172.17.38.131 eq www
+ permit tcp 172.17.38.0 0.0.1.255 host 172.17.38.131 eq 443
+ permit tcp 172.17.38.0 0.0.1.255 host 172.17.38.130 eq domain
+ permit udp 172.17.38.0 0.0.1.255 host 172.17.38.130 eq domain
+ deny ip any 172.17.38.0 0.0.0.255
+!
+!
+!
+!
+!
+!
+telephony-service
+ max-ephones 20
+ max-dn 20
+ ip source-address 172.17.38.145 port 4000
+!
+ephone-dn 11
+ number 4001
+!
+ephone-dn 12
+ number 4002
+!
+ephone 1
+ device-security-mode none
+ mac-address 0030.F2C7.3C96
+ type 7960
+ button 1:11
+!
+ephone 2
+ device-security-mode none
+ mac-address 000D.BD45.3408
+ type 7960
+ button 1:12
+!
+ephone 5
+ device-security-mode none
+ type 7960
+!
+ephone 3
+ device-security-mode none
+!
+line con 0
+!
+line aux 0
+!
+line vty 0 4
+ login
+!
+!
+!
+end
+

@@ -1,0 +1,55 @@
+!
+version 12.1
+no service timestamps log datetime msec
+no service timestamps debug datetime msec
+no service password-encryption
+!
+hostname Switch
+!
+!
+!
+!
+!
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+!
+interface Ethernet0/1
+ switchport mode access
+ switchport voice vlan 295
+!
+interface Ethernet1/1
+ switchport access vlan 293
+!
+interface FastEthernet2/1
+ switchport mode trunk
+!
+interface FastEthernet3/1
+ switchport mode trunk
+!
+interface FastEthernet4/1
+ switchport mode trunk
+!
+interface FastEthernet5/1
+ switchport trunk allowed vlan 2-290,293,296-1001
+ switchport mode trunk
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+!
+!
+!
+line con 0
+!
+line vty 0 4
+ login
+line vty 5 15
+ login
+!
+!
+!
+!
+end
+
